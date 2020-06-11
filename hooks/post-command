@@ -38,8 +38,8 @@ if [[ -n "${BUILDKITE_PLUGIN_CACHE_CACHE_KEY:-}" ]]; then
     else
       cache_key=$BUILDKITE_PLUGIN_CACHE_CACHE_KEY
     fi
-    
-        
+
+
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
       rsync_args="--ignore-missing-args"
     else
@@ -85,9 +85,11 @@ if [[ -n "${BUILDKITE_PLUGIN_CACHE_CACHE_KEY:-}" ]]; then
       else
         echo "--- :aws: :amazon-s3: sync ${paths[*]}"
         TAR_FILE="${cache_key}.tar"
-        if [ ! -f "$TAR_FILE" ]; then
-          tar --ignore-failed-read -cf "${TAR_FILE}" "${paths[*]}"
+        if [ -f "$TAR_FILE" ]; then
+          rm -f "${TAR_FILE}"
         fi
+
+        tar --ignore-failed-read -cf "${TAR_FILE}" "${paths[*]}"
         aws s3 cp "$TAR_FILE" "s3://${bucket}/${TAR_FILE}" $AWS_ARGS
         rm -f "${TAR_FILE}"
       fi
@@ -107,9 +109,10 @@ if [[ -n "${BUILDKITE_PLUGIN_CACHE_CACHE_KEY:-}" ]]; then
       else
         echo "--- :aws: :amazon-s3: sync ${path}"
         TAR_FILE="${cache_key}.tar"
-        if [ ! -f "$TAR_FILE" ]; then
-          tar --ignore-failed-read -cf "${TAR_FILE}" "${paths[@]}"
+        if [ -f "$TAR_FILE" ]; then
+          rm -f "${TAR_FILE}"
         fi
+        tar --ignore-failed-read -cf "${TAR_FILE}" "${paths[@]}"
         aws s3 cp "${TAR_FILE}" "s3://${bucket}/${TAR_FILE}" $AWS_ARGS
         rm -f "${TAR_FILE}"
       fi
